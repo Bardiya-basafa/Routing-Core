@@ -4,6 +4,8 @@
 // #include <sqlite3.h>
 #include <filesystem>
 #include <queue>
+#include <set>
+#include <bits/stdc++.h>
 
 using namespace std;
 using pii = pair<int, int>;
@@ -22,71 +24,46 @@ struct edge
     }
 };
 
-vector<double> dijstra(vector<vector<edge>> &graph, int s, vector<int> &parent, vector<double> &delays);
+vector<int> nodes;
+vector<double> delays;
+vector<edge> edges;
+vector<vector<edge>> graph;
+vector<int> parent;
+int V;
+bool negetive_cycle = false;
+bool negetive_edge = false;
 
-vector<double> bellmanFord(vector<edge> &graph, int s, vector<int> &parent, vector<double> &delays, int V);
+vector<double> dijstra(int s);
+
+vector<double> bellmanFord(int s);
+
+double shortestPathCost(int s, int t);
+
+pair<vector<int>, double> nearestNeighbor(vector<vector<edge>> &graph, int s, vector<int> destinations);
+
+void initialize();
 
 // void getFromDb(vector<int> &nodes, vector<double> &delays, vector<edge> &edges)
 
 int main(int argc, char const *argv[])
 {
-
-    vector<int> nodes = {0, 1, 2, 3, 4};
-    vector<double> delays = {0, 0, 0, 0, 0};
-    vector<edge> edges = {
-        {0, 1, 4, 0, 0},
-        {0, 2, 8, 0, 0},
-        {1, 2, 3, 0, 0},
-        {1, 4, 6, 0, 0},
-        {4, 3, 10, 0, 0},
-        {2, 3, 2, 0, 0},
-    };
-
-    // complete graph
-    vector<vector<edge>> graph(nodes.size());
-
-    for (auto &&u : nodes)
+    // initialize data structures
+    initialize();
+    if (negetive_cycle)
     {
-        for (auto &&edg : edges)
-        {
-            if (edg.u == u)
-            {
-                graph[u].push_back(edg);
-            }
-            else if (edg.v == u)
-            {
-                edge new_edg = edg;
-                swap(new_edg.u, new_edg.v);
-                graph[u].push_back(new_edg);
-            }
-        }
+        cout << "Graph has negetive cycle and cant find any shortest path!";
+        return 0;
     }
 
     // dijstra
-    // vector<int> parent(graph.size());
-    // auto dist = dijstra(graph, 0, parent, delays);
-
-    // for (auto &&i : parent)
-    // {
-    //     cout << i << " ";
-    // }
-
+    auto dist = dijstra(0);
     // bellman ford
-    vector<int> parent(nodes.size());
-
-    auto dist1 = bellmanFord(edges, 0, parent, delays, nodes.size());
-
-    for (auto &&i : parent)
-    {
-        cout << i << " ";
-    }
-
-    // getFromDb(nodes, delays, edges);
+    auto dist1 = bellmanFord(0);
 
     return 0;
 }
 
-vector<double> dijstra(vector<vector<edge>> &graph, int s, vector<int> &parent, vector<double> &delays)
+vector<double> dijstra(int s)
 {
     vector<double> dist(graph.size(), __INT_MAX__);
     dist[s] = 0;
@@ -120,7 +97,7 @@ vector<double> dijstra(vector<vector<edge>> &graph, int s, vector<int> &parent, 
     return dist;
 }
 
-vector<double> bellmanFord(vector<edge> &graph, int s, vector<int> &parent, vector<double> &delays, int V)
+vector<double> bellmanFord(int s)
 {
 
     vector<double> dist(V, __INT_MAX__);
@@ -128,7 +105,7 @@ vector<double> bellmanFord(vector<edge> &graph, int s, vector<int> &parent, vect
 
     for (int i = 0; i < V; i++)
     {
-        for (auto &&e : graph)
+        for (auto &&e : edges)
         {
             int u = e.u;
             int v = e.v;
@@ -148,6 +125,112 @@ vector<double> bellmanFord(vector<edge> &graph, int s, vector<int> &parent, vect
     }
 
     return dist;
+}
+
+double shortestPathCost(int s, int t)
+{
+    if (s == t)
+    {
+        return 0;
+    }
+
+    double cost = 0;
+    if (negetive_edge)
+    {
+        vector<double> dist = bellmanFord(s);
+        cost = dist[t];
+    }
+    else
+    {
+        vector<double> dist = dijstra(s);
+        cost = dist[t];
+    }
+
+    return cost;
+}
+
+pair<vector<int>, double> nearestNeighbor(vector<vector<edge>> &graph, int s, vector<int> destinations)
+{
+
+    vector<int> route;
+    route.push_back(s);
+    int current_node = s;
+    set<int> unvisited(destinations.begin(), destinations.end());
+    double total_cost = 0;
+    while (!unvisited.empty())
+    {
+        int best_node = -1;
+        int best_cost = __INT_MAX__;
+        for (auto &&n : unvisited)
+        {
+            double path_cost = shortestPathCost(current_node, n);
+            if (path_cost < best_cost)
+            {
+                best_cost = path_cost;
+                best_node = n;
+            }
+        }
+
+        route.push_back(best_node);
+        total_cost += best_cost;
+        current_node = best_node;
+        unvisited.erase(best_node);
+    }
+
+    total_cost += shortestPathCost(current_node, s);
+    route.push_back(s);
+    return make_pair(route, total_cost);
+}
+
+void initialize()
+{
+    nodes = {0, 1, 2, 3, 4};
+    V = nodes.size();
+    delays = {0, 0, 0, 0, 0};
+    edges = {
+        {0, 1, 4, 0, 0},
+        {0, 2, 8, 0, 0},
+        {1, 2, 3, 0, 0},
+        {1, 4, 6, 0, 0},
+        {4, 3, 10, 0, 0},
+        {2, 3, 2, 0, 0},
+    };
+    graph.reserve(V);
+    parent.reserve(V);
+
+    // complete graph
+
+    for (auto &&u : nodes)
+    {
+        for (auto &&edg : edges)
+        {
+            if (edg.u == u)
+            {
+                graph[u].push_back(edg);
+            }
+            else if (edg.v == u)
+            {
+                edge new_edg = edg;
+                swap(new_edg.u, new_edg.v);
+                graph[u].push_back(new_edg);
+            }
+        }
+    }
+
+    vector<double> dist = bellmanFord(0);
+    if (dist[0] == -1)
+    {
+        negetive_cycle = true;
+    }
+
+    for (auto &&e : edges)
+    {
+        if (e.total_cost() < 0)
+        {
+            negetive_edge = true;
+            return;
+        }
+    }
 }
 
 // void getFromDb(vector<int> &nodes, vector<double> &delays, vector<edge> &edges)
