@@ -60,7 +60,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /home/bardiya/Projects/RoutingCore
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/bardiya/Projects/RoutingCore
+CMAKE_BINARY_DIR = /home/bardiya/Projects/RoutingCore/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/bardiya/Projects/RoutingCore/CMakeFiles /home/bardiya/Projects/RoutingCore//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/bardiya/Projects/RoutingCore/build/CMakeFiles /home/bardiya/Projects/RoutingCore/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/bardiya/Projects/RoutingCore/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/bardiya/Projects/RoutingCore/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target

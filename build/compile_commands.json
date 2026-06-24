@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/bardiya/Projects/RoutingCore/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/my_app.dir/main.cpp.o -c /home/bardiya/Projects/RoutingCore/main.cpp",
+  "file": "/home/bardiya/Projects/RoutingCore/main.cpp",
+  "output": "CMakeFiles/my_app.dir/main.cpp.o"
+},
+{
+  "directory": "/home/bardiya/Projects/RoutingCore/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/my_app.dir/database.cpp.o -c /home/bardiya/Projects/RoutingCore/database.cpp",
+  "file": "/home/bardiya/Projects/RoutingCore/database.cpp",
+  "output": "CMakeFiles/my_app.dir/database.cpp.o"
+}
+]

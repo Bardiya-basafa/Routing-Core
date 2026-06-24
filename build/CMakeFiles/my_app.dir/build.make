@@ -56,7 +56,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /home/bardiya/Projects/RoutingCore
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/bardiya/Projects/RoutingCore
+CMAKE_BINARY_DIR = /home/bardiya/Projects/RoutingCore/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/my_app.dir/depend.make
@@ -70,32 +70,32 @@ include CMakeFiles/my_app.dir/progress.make
 include CMakeFiles/my_app.dir/flags.make
 
 CMakeFiles/my_app.dir/main.cpp.o: CMakeFiles/my_app.dir/flags.make
-CMakeFiles/my_app.dir/main.cpp.o: main.cpp
+CMakeFiles/my_app.dir/main.cpp.o: /home/bardiya/Projects/RoutingCore/main.cpp
 CMakeFiles/my_app.dir/main.cpp.o: CMakeFiles/my_app.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/bardiya/Projects/RoutingCore/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/my_app.dir/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/my_app.dir/main.cpp.o -MF CMakeFiles/my_app.dir/main.cpp.o.d -o CMakeFiles/my_app.dir/main.cpp.o -c /home/bardiya/Projects/RoutingCore/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/bardiya/Projects/RoutingCore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/my_app.dir/main.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/my_app.dir/main.cpp.o -MF CMakeFiles/my_app.dir/main.cpp.o.d -o CMakeFiles/my_app.dir/main.cpp.o -c /home/bardiya/Projects/RoutingCore/main.cpp
 
 CMakeFiles/my_app.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/my_app.dir/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/bardiya/Projects/RoutingCore/main.cpp > CMakeFiles/my_app.dir/main.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/bardiya/Projects/RoutingCore/main.cpp > CMakeFiles/my_app.dir/main.cpp.i
 
 CMakeFiles/my_app.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/my_app.dir/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/bardiya/Projects/RoutingCore/main.cpp -o CMakeFiles/my_app.dir/main.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/bardiya/Projects/RoutingCore/main.cpp -o CMakeFiles/my_app.dir/main.cpp.s
 
 CMakeFiles/my_app.dir/database.cpp.o: CMakeFiles/my_app.dir/flags.make
-CMakeFiles/my_app.dir/database.cpp.o: database.cpp
+CMakeFiles/my_app.dir/database.cpp.o: /home/bardiya/Projects/RoutingCore/database.cpp
 CMakeFiles/my_app.dir/database.cpp.o: CMakeFiles/my_app.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/bardiya/Projects/RoutingCore/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/my_app.dir/database.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/my_app.dir/database.cpp.o -MF CMakeFiles/my_app.dir/database.cpp.o.d -o CMakeFiles/my_app.dir/database.cpp.o -c /home/bardiya/Projects/RoutingCore/database.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/bardiya/Projects/RoutingCore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/my_app.dir/database.cpp.o"
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/my_app.dir/database.cpp.o -MF CMakeFiles/my_app.dir/database.cpp.o.d -o CMakeFiles/my_app.dir/database.cpp.o -c /home/bardiya/Projects/RoutingCore/database.cpp
 
 CMakeFiles/my_app.dir/database.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/my_app.dir/database.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/bardiya/Projects/RoutingCore/database.cpp > CMakeFiles/my_app.dir/database.cpp.i
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/bardiya/Projects/RoutingCore/database.cpp > CMakeFiles/my_app.dir/database.cpp.i
 
 CMakeFiles/my_app.dir/database.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/my_app.dir/database.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/bardiya/Projects/RoutingCore/database.cpp -o CMakeFiles/my_app.dir/database.cpp.s
+	/usr/bin/g++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/bardiya/Projects/RoutingCore/database.cpp -o CMakeFiles/my_app.dir/database.cpp.s
 
 # Object files for target my_app
 my_app_OBJECTS = \
@@ -109,7 +109,7 @@ my_app: CMakeFiles/my_app.dir/main.cpp.o
 my_app: CMakeFiles/my_app.dir/database.cpp.o
 my_app: CMakeFiles/my_app.dir/build.make
 my_app: CMakeFiles/my_app.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/bardiya/Projects/RoutingCore/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable my_app"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/bardiya/Projects/RoutingCore/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable my_app"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/my_app.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -121,6 +121,6 @@ CMakeFiles/my_app.dir/clean:
 .PHONY : CMakeFiles/my_app.dir/clean
 
 CMakeFiles/my_app.dir/depend:
-	cd /home/bardiya/Projects/RoutingCore && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/bardiya/Projects/RoutingCore /home/bardiya/Projects/RoutingCore /home/bardiya/Projects/RoutingCore /home/bardiya/Projects/RoutingCore /home/bardiya/Projects/RoutingCore/CMakeFiles/my_app.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /home/bardiya/Projects/RoutingCore/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/bardiya/Projects/RoutingCore /home/bardiya/Projects/RoutingCore /home/bardiya/Projects/RoutingCore/build /home/bardiya/Projects/RoutingCore/build /home/bardiya/Projects/RoutingCore/build/CMakeFiles/my_app.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/my_app.dir/depend
 
