@@ -39,7 +39,7 @@ vector<double> bellmanFord(int s);
 
 double shortestPathCost(int s, int t);
 
-pair<vector<int>, double> nearestNeighbor(vector<vector<edge>> &graph, int s, vector<int> destinations);
+pair<vector<int>, double> nearestNeighbor(int s, vector<int> destinations);
 
 void initialize();
 
@@ -56,16 +56,24 @@ int main(int argc, char const *argv[])
     }
 
     // dijstra
-    auto dist = dijstra(0);
-    // bellman ford
-    auto dist1 = bellmanFord(0);
+    // auto dist = dijstra(0);
+    // // bellman ford
+    // auto dist1 = bellmanFord(0);
+
+    auto [route, total_cost] = nearestNeighbor(0, {1, 2, 3, 4});
+
+    cout << total_cost << endl;
+    for (auto &&n : route)
+    {
+        cout << n << " ";
+    }
 
     return 0;
 }
 
 vector<double> dijstra(int s)
 {
-    vector<double> dist(graph.size(), __INT_MAX__);
+    vector<double> dist(V, __INT_MAX__);
     dist[s] = 0;
     priority_queue<pii, vector<pii>, greater<pii>> pq;
     pq.emplace(make_pair(0, s));
@@ -109,7 +117,7 @@ vector<double> bellmanFord(int s)
         {
             int u = e.u;
             int v = e.v;
-            int w = e.total_cost();
+            int w = e.total_cost() + delays[v];
             if (dist[u] + w < dist[v])
             {
 
@@ -149,7 +157,7 @@ double shortestPathCost(int s, int t)
     return cost;
 }
 
-pair<vector<int>, double> nearestNeighbor(vector<vector<edge>> &graph, int s, vector<int> destinations)
+pair<vector<int>, double> nearestNeighbor(int s, vector<int> destinations)
 {
 
     vector<int> route;
@@ -184,19 +192,67 @@ pair<vector<int>, double> nearestNeighbor(vector<vector<edge>> &graph, int s, ve
 
 void initialize()
 {
+    // nodes = {0, 1, 2, 3, 4};
+    // V = nodes.size();
+    // delays = {0, 0, 0, 0, 0};
+    // edges = {
+    //     {0, 1, 4, 0, 0},
+    //     {0, 2, 8, 0, 0},
+    //     {1, 2, 3, 0, 0},
+    //     {1, 4, 6, 0, 0},
+    //     {4, 3, 10, 0, 0},
+    //     {2, 3, 2, 0, 0},
+    // };
+
+    // nodes = {0, 1, 2, 3, 4, 5};
+    // V = nodes.size();
+
+    // delays = {0, 0, 0, 0, 0, 0};
+
+    // edges = {
+    //     {0, 1, 10, 0, 0},
+    //     {0, 2, 15, 0, 0},
+    //     {0, 3, 20, 0, 0},
+    //     {0, 4, 25, 0, 0},
+    //     {0, 5, 18, 0, 0},
+
+    //     {1, 2, 35, 0, 0},
+    //     {1, 3, 25, 0, 0},
+    //     {1, 4, 17, 0, 0},
+    //     {1, 5, 28, 0, 0},
+
+    //     {2, 3, 30, 0, 0},
+    //     {2, 4, 20, 0, 0},
+    //     {2, 5, 12, 0, 0},
+
+    //     {3, 4, 15, 0, 0},
+    //     {3, 5, 22, 0, 0},
+
+    //     {4, 5, 16, 0, 0},
+    // };
     nodes = {0, 1, 2, 3, 4};
     V = nodes.size();
+
     delays = {0, 0, 0, 0, 0};
+
     edges = {
-        {0, 1, 4, 0, 0},
-        {0, 2, 8, 0, 0},
-        {1, 2, 3, 0, 0},
-        {1, 4, 6, 0, 0},
-        {4, 3, 10, 0, 0},
-        {2, 3, 2, 0, 0},
+        {0, 1, 29, 0, 0},
+        {0, 2, 20, 0, 0},
+        {0, 3, 21, 0, 0},
+        {0, 4, 16, 0, 0},
+
+        {1, 2, 15, 0, 0},
+        {1, 3, 29, 0, 0},
+        {1, 4, 28, 0, 0},
+
+        {2, 3, 15, 0, 0},
+        {2, 4, 14, 0, 0},
+
+        {3, 4, 4, 0, 0},
     };
-    graph.reserve(V);
-    parent.reserve(V);
+
+    graph.resize(V);
+    parent.resize(V);
 
     // complete graph
 
