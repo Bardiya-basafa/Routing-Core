@@ -1,3 +1,0 @@
-/home/bardiya/Projects/RoutingCore/CMakeFiles/my_app.dir
-/home/bardiya/Projects/RoutingCore/CMakeFiles/edit_cache.dir
-/home/bardiya/Projects/RoutingCore/CMakeFiles/rebuild_cache.dir

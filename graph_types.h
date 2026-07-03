@@ -9,7 +9,6 @@ struct edge
     double w;
     double total_cost()
     {
-        // return d * t * w;
-        return d;
+        return d * t * w;
     }
 };

@@ -1,1 +1,0 @@
-/usr/bin/g++ -g CMakeFiles/my_app.dir/main.cpp.o CMakeFiles/my_app.dir/database.cpp.o -o my_app  -lsqlite3 
