@@ -100,19 +100,21 @@ map<int, double> Routing::bellmanFord(int s)
     }
 
     // negative cycle check
-    for (auto &&e : edges)
+    for (auto &&item : graph)
     {
-        int u = e.u;
-        int v = e.v;
-        double w = e.total_cost() + delays[v];
-
-        if (dist[u] != INF && dist[u] + w < dist[v])
+        for (auto &&e : item.second)
         {
-            parent.clear();
-            return {{-1, -1}};
+            int u = e.u;
+            int v = e.v;
+            double w = e.total_cost() + delays[v];
+
+            if (dist[u] != INF && dist[u] + w < dist[v])
+            {
+                parent.clear();
+                return {{-1, -1}};
+            }
         }
     }
-
     return dist;
 }
 
@@ -190,37 +192,23 @@ bool Routing::getNodes(string filepath)
 
 bool Routing::getEdges(string filepath)
 {
-    edges.clear();
+    for (auto &&u : nodes)
+    {
+        graph[u].clear();
+    }
+
     negetive_edge = false;
-    auto res = readEdges(edges, delays, negetive_edge, filepath);
+    auto res = readEdges(graph, delays, negetive_edge, filepath);
     return res;
 }
 
 void Routing::initialize()
 {
     parent.clear();
-    graph.clear();
     negetive_cycle = false;
     V = nodes.size();
 
     parent.clear();
-
-    for (auto &&u : nodes)
-    {
-        for (auto &&edg : edges)
-        {
-            if (edg.u == u)
-            {
-                graph[u].push_back(edg);
-            }
-            else if (edg.v == u)
-            {
-                edge new_edg = edg;
-                swap(new_edg.u, new_edg.v);
-                graph[u].push_back(new_edg);
-            }
-        }
-    }
 
     map<int, double> dist = bellmanFord(*nodes.begin());
     if (dist[-1] == -1)

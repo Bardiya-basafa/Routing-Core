@@ -19,7 +19,7 @@ class Routing
 public:
     set<int> nodes;
     unordered_map<int, double> delays;
-    vector<edge> edges;
+    // vector<edge> edges;
     map<int, vector<edge>> graph;
     map<int, int> parent;
 
