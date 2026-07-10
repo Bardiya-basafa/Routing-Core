@@ -37,7 +37,7 @@ void showStats(const Routing &r)
     cout << edgeCount / 2 << " undirected edges\n";
     if (r.hasNegativeEdge())
     {
-        cout << "⚠️  Graph contains negative edge weights.\n";
+        cout << "Graph contains negative edge weights.\n";
     }
 }
 
@@ -94,7 +94,7 @@ void printDist(const map<int, double> &dist, int from,
         {
             cout << "  " << n << " : ";
             if (d == numeric_limits<double>::infinity())
-                cout << "∞\n";
+                cout << "INF\n";
             else
                 cout << d << "\n";
         }
