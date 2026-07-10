@@ -1,117 +1,99 @@
-#include <map>
-#include <vector>
-#include <unordered_map>
-#include <queue>
-#include <unordered_set>
-#include <limits>
-#include <set>
-#include "file.h"
-#include "graph_types.h"
 #include "routing.h"
+#include <limits>
+#include <queue>
+#include <algorithm> // for reverse
+#include <stdexcept>
 
 using namespace std;
-using pii = pair<int, int>;
 using pdi = pair<double, int>;
-using pbs = pair<bool, string>;
 
 Routing::Routing()
 {
-    INF = numeric_limits<double>::infinity();
-    negetive_cycle = false;
-    negetive_edge = false;
-    V = 0;
-};
+    INF_ = numeric_limits<double>::infinity();
+    has_negative_cycle_ = false;
+    has_negative_edge_ = false;
+    V_ = 0;
+}
 
 map<int, double> Routing::dijkstra(int s)
 {
-
+    last_source_ = s;
     map<int, double> dist;
-    for (auto &&n : nodes)
+    for (int n : nodes_)
     {
-        dist[n] = INF;
-        parent[n] = -1;
+        dist[n] = INF_;
+        parent_[n] = -1;
     }
-
-    dist[s] = 0;
+    dist[s] = 0.0;
     priority_queue<pdi, vector<pdi>, greater<pdi>> pq;
-    pq.emplace(make_pair(0.0, s));
+    pq.emplace(0.0, s);
+
     while (!pq.empty())
     {
-        pdi p = pq.top();
+        auto [d, u] = pq.top();
         pq.pop();
-        int u = p.second;
-        double d = p.first;
         if (d > dist[u])
-        {
             continue;
-        }
 
-        for (auto &&e : graph[u])
+        for (const auto &e : graph_[u])
         {
             int v = e.v;
-            double w = e.total_cost() + delays[v];
-
+            double w = e.total_cost() + delays_[v];
             if (dist[u] + w < dist[v])
             {
-                parent[v] = u;
+                parent_[v] = u;
                 dist[v] = dist[u] + w;
-                pq.emplace(make_pair(dist[v], v));
+                pq.emplace(dist[v], v);
             }
         }
     }
-
     return dist;
 }
 
 map<int, double> Routing::bellmanFord(int s)
 {
-
+    last_source_ = s;
     map<int, double> dist;
-    for (auto &&n : nodes)
+    for (int n : nodes_)
     {
-        dist[n] = INF;
-        parent[n] = -1;
+        dist[n] = INF_;
+        parent_[n] = -1;
     }
+    dist[s] = 0.0;
 
-    dist[s] = 0;
-
-    for (int i = 0; i < V - 1; i++)
+    // Relax edges V-1 times
+    for (int i = 0; i < V_ - 1; ++i)
     {
         bool updated = false;
-        for (auto &&item : graph)
+        for (const auto &[u, neighbors] : graph_)
         {
-            for (auto &&e : item.second)
+            for (const auto &e : neighbors)
             {
-                int u = e.u;
                 int v = e.v;
-                double w = e.total_cost() + delays[v];
-
-                if (dist[u] != INF && dist[u] + w < dist[v])
+                double w = e.total_cost() + delays_[v];
+                if (dist[u] != INF_ && dist[u] + w < dist[v])
                 {
                     dist[v] = dist[u] + w;
-                    parent[v] = u;
+                    parent_[v] = u;
                     updated = true;
                 }
             }
         }
-
         if (!updated)
             break;
     }
 
-    // negative cycle check
-    for (auto &&item : graph)
+    // Detect negative cycles
+    for (const auto &[u, neighbors] : graph_)
     {
-        for (auto &&e : item.second)
+        for (const auto &e : neighbors)
         {
-            int u = e.u;
             int v = e.v;
-            double w = e.total_cost() + delays[v];
-
-            if (dist[u] != INF && dist[u] + w < dist[v])
+            double w = e.total_cost() + delays_[v];
+            if (dist[u] != INF_ && dist[u] + w < dist[v])
             {
-                parent.clear();
-                return {{-1, -1}};
+                parent_.clear();
+                return {}; // empty map = negative cycle detected
             }
         }
     }
@@ -121,13 +103,10 @@ map<int, double> Routing::bellmanFord(int s)
 double Routing::shortestPathCost(int s, int t)
 {
     if (s == t)
-    {
-        return 0;
-    }
+        return 0.0;
 
     map<int, double> dist;
-
-    if (negetive_edge)
+    if (has_negative_edge_)
     {
         dist = bellmanFord(s);
     }
@@ -136,83 +115,100 @@ double Routing::shortestPathCost(int s, int t)
         dist = dijkstra(s);
     }
 
-    if (dist.count(-1) && dist.at(-1) == -1)
-    {
-        return INF;
-    }
+    // Negative cycle detection
+    if (dist.empty())
+        return INF_;
 
-    if (!dist.count(t))
-    {
-        return INF;
-    }
-
-    return dist.at(t);
+    auto it = dist.find(t);
+    return (it != dist.end()) ? it->second : INF_;
 }
 
-pair<vector<int>, double> Routing::nearestNeighbor(int s, vector<int> destinations)
+vector<int> Routing::reconstructPath(int dest) const
 {
+    vector<int> path;
+    if (parent_.count(dest) == 0)
+        return path; // dest not in graph
 
-    vector<int> route;
-    route.push_back(s);
-    int current_node = s;
+    if (dest == last_source_)
+    {
+        return {dest};
+    }
+
+    // If the node is unreachable, its parent remains -1
+    if (parent_.at(dest) == -1)
+    {
+        return {}; // unreachable
+    }
+
+    int cur = dest;
+    while (cur != -1)
+    {
+        path.push_back(cur);
+        cur = parent_.at(cur);
+    }
+    reverse(path.begin(), path.end());
+    return path;
+}
+
+pair<vector<int>, double> Routing::nearestNeighbor(int start,
+                                                   const vector<int> &destinations)
+{
+    vector<int> route = {start};
+    int current = start;
     unordered_set<int> unvisited(destinations.begin(), destinations.end());
-    double total_cost = 0;
+    double total_cost = 0.0;
+
     while (!unvisited.empty())
     {
         int best_node = -1;
-        double best_cost = INF;
-        for (auto &&n : unvisited)
+        double best_cost = INF_;
+        for (int n : unvisited)
         {
-            double path_cost = shortestPathCost(current_node, n);
-            if (path_cost < best_cost)
+            double cost = shortestPathCost(current, n);
+            if (cost < best_cost)
             {
-                best_cost = path_cost;
+                best_cost = cost;
                 best_node = n;
             }
         }
-
         route.push_back(best_node);
         total_cost += best_cost;
-        current_node = best_node;
+        current = best_node;
         unvisited.erase(best_node);
     }
 
-    total_cost += shortestPathCost(current_node, s);
-    route.push_back(s);
-    return make_pair(route, total_cost);
+    total_cost += shortestPathCost(current, start);
+    route.push_back(start);
+    return {route, total_cost};
 }
 
-bool Routing::getNodes(string filepath)
+bool Routing::getNodes(const string &filepath)
 {
-    nodes.clear();
-    delays.clear();
-    auto res = readNodes(nodes, delays, filepath);
-    return res;
+    nodes_.clear();
+    delays_.clear();
+    return readNodes(nodes_, delays_, filepath);
 }
 
-bool Routing::getEdges(string filepath)
+bool Routing::getEdges(const string &filepath)
 {
-    for (auto &&u : nodes)
-    {
-        graph[u].clear();
-    }
-
-    negetive_edge = false;
-    auto res = readEdges(graph, delays, negetive_edge, filepath);
-    return res;
+    for (int u : nodes_)
+        graph_[u].clear();
+    has_negative_edge_ = false;
+    return readEdges(graph_, delays_, has_negative_edge_, filepath);
 }
 
 void Routing::initialize()
 {
-    parent.clear();
-    negetive_cycle = false;
-    V = nodes.size();
+    parent_.clear();
+    has_negative_cycle_ = false;
+    V_ = static_cast<int>(nodes_.size());
+    if (V_ == 0)
+        return;
 
-    parent.clear();
-
-    map<int, double> dist = bellmanFord(*nodes.begin());
-    if (dist[-1] == -1)
+    // Run Bellman‑Ford from an arbitrary node to detect negative cycles
+    map<int, double> test = bellmanFord(*nodes_.begin());
+    if (test.empty())
     {
-        negetive_cycle = true;
+        has_negative_cycle_ = true;
     }
 }

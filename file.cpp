@@ -1,96 +1,117 @@
-
-#include <vector>
+#include "file.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <map>
-#include <set>
-#include <unordered_map>
-#include "graph_types.h"
+#include <algorithm> // for remove
 
 using namespace std;
 
-bool readEdges(map<int, vector<edge>> &graph, unordered_map<int, double> &delays, bool &negetive_edge, string file_path)
+bool readEdges(map<int, vector<edge>> &graph,
+               const unordered_map<int, double> &delays,
+               bool &has_negative_edge,
+               const string &file_path)
 {
     ifstream file(file_path);
-
     if (!file.is_open())
+        return false;
+
+    // ---------- Validate header ----------
+    string header;
+    if (!getline(file, header))
     {
+        cerr << "Error: Edges file is empty." << endl;
+        return false;
+    }
+    header.erase(remove(header.begin(), header.end(), '\r'), header.end());
+    if (header != "source,target,distance,traffic,weather")
+    {
+        cerr << "Error: Invalid header in edges file. Expected: source,target,distance,traffic,weather" << endl;
         return false;
     }
 
     try
     {
         string line;
-        getline(file, line);
         while (getline(file, line))
         {
             stringstream ss(line);
-            string sourceStr, targetStr, distanceStr, traficStr, weatherStr;
-            getline(ss, sourceStr, ',');
-            getline(ss, targetStr, ',');
-            getline(ss, distanceStr, ',');
-            getline(ss, traficStr, ',');
-            getline(ss, weatherStr, ',');
-            int u = stoi(sourceStr), v = stoi(targetStr);
-            double distance = stod(distanceStr), trafic = stod(traficStr), weather = stod(weatherStr);
-            if (distance * trafic * weather + delays[u] < 0 || distance * trafic * weather + delays[v] < 0)
+            string src_str, tgt_str, dist_str, traf_str, weath_str;
+            getline(ss, src_str, ',');
+            getline(ss, tgt_str, ',');
+            getline(ss, dist_str, ',');
+            getline(ss, traf_str, ',');
+            getline(ss, weath_str, ',');
+
+            int u = stoi(src_str), v = stoi(tgt_str);
+            double distance = stod(dist_str);
+            double traffic = stod(traf_str);
+            double weather = stod(weath_str);
+
+            edge forward = {u, v, distance, traffic, weather};
+            edge backward = {v, u, distance, traffic, weather};
+
+            // Negative weight detection: total cost including destination delay
+            if (forward.total_cost() + delays.at(v) < 0.0 ||
+                backward.total_cost() + delays.at(u) < 0.0)
             {
-                negetive_edge = true;
+                has_negative_edge = true;
             }
 
-            edge e = {u, v, distance, trafic, weather};
-            edge erev = {v, u, distance, trafic, weather};
-            graph[u].push_back(e);
-            graph[v].push_back(erev);
+            graph[u].push_back(forward);
+            graph[v].push_back(backward);
         }
     }
     catch (const std::exception &e)
     {
-        cout << "File format is incorrect" << endl;
+        cerr << "Error: File format is incorrect (" << e.what() << ")" << endl;
         graph.clear();
-        negetive_edge = false;
+        has_negative_edge = false;
         return false;
     }
-
-    file.close();
-
     return true;
 }
 
-bool readNodes(set<int> &nodes, unordered_map<int, double> &delays, string file_path)
+bool readNodes(set<int> &nodes, unordered_map<int, double> &delays,
+               const string &file_path)
 {
-
     ifstream file(file_path);
-
     if (!file.is_open())
+        return false;
+
+    // ---------- Validate header ----------
+    string header;
+    if (!getline(file, header))
     {
+        cerr << "Error: Nodes file is empty." << endl;
+        return false;
+    }
+    header.erase(remove(header.begin(), header.end(), '\r'), header.end());
+    if (header != "node,delay")
+    {
+        cerr << "Error: Invalid header in nodes file. Expected: node,delay" << endl;
         return false;
     }
 
     try
     {
         string line;
-        getline(file, line);
         while (getline(file, line))
         {
             stringstream ss(line);
-            string nodeStr, delayStr;
-            getline(ss, nodeStr, ',');
-            getline(ss, delayStr, ',');
-            int node = stoi(nodeStr);
+            string node_str, delay_str;
+            getline(ss, node_str, ',');
+            getline(ss, delay_str, ',');
+            int node = stoi(node_str);
             nodes.insert(node);
-            delays[node] = stod(delayStr);
+            delays[node] = stod(delay_str);
         }
     }
     catch (const std::exception &e)
     {
-        cout << "File format is incorrect" << endl;
+        cerr << "Error: File format is incorrect (" << e.what() << ")" << endl;
         nodes.clear();
         delays.clear();
         return false;
     }
-
-    file.close();
     return true;
 }
