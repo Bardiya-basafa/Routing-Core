@@ -1,0 +1,1 @@
+g++ ./main.cpp ./routing.cpp ./file.cpp -o RoutingCore && clear && ./RoutingCore
