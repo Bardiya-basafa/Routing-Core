@@ -1,3 +1,7 @@
+members: omid basafa 403521078
+github repo: https://github.com/Bardiya-basafa/Routing-Core.git
+
+
 for testing the graphs in the files section
 
 first run the application with "sh ./run.sh"
