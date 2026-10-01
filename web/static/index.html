@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Routing Core Engine</title>
+<style>
+:root {
+  --bg:#0f172a; --card:#1e293b; --border:#334155;
+  --accent:#3b82f6; --accent-h:#2563eb;
+  --text:#e2e8f0; --muted:#94a3b8;
+  --warning:#f59e0b; --error:#ef4444; --success:#22c55e;
+  --radius:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px;line-height:1.6}
+.container{max-width:900px;margin:0 auto}
+header{text-align:center;margin-bottom:24px}
+h1{font-size:28px;font-weight:700;letter-spacing:-.5px}
+header p{color:var(--muted);margin-top:6px;font-size:14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card h3{font-size:15px;margin-bottom:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.form-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+label{font-size:14px;color:var(--muted);font-weight:500}
+select,button,input{font-family:inherit;font-size:14px;padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);outline:none;transition:border-color .2s}
+select:focus,button:focus,input:focus{border-color:var(--accent)}
+button{background:var(--accent);border-color:var(--accent);color:#fff;cursor:pointer;font-weight:600;transition:background .2s,transform .1s}
+button:hover{background:var(--accent-h)}
+button:active{transform:scale(.97)}
+button.ghost{background:transparent;color:var(--text);border-color:var(--border)}
+button.ghost:hover{background:var(--border)}
+.stats{display:flex;gap:28px;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:22px;font-weight:700}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:16px}
+.tab{background:transparent;border:none;border-bottom:2px solid transparent;border-radius:0;padding:10px 18px;color:var(--muted);font-weight:500;cursor:pointer;font-size:14px}
+.tab:hover{color:var(--text);background:transparent}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+svg{width:100%;max-width:500px;height:auto;display:block;margin:0 auto}
+.edge{stroke:#475569;stroke-width:2;transition:stroke .3s,stroke-width .3s}
+.edge-label{fill:#cbd5e1;font-size:12px;font-weight:600;pointer-events:none}
+.edge-detail{fill:#64748b;font-size:9px;pointer-events:none}
+.node{fill:var(--accent);stroke:#1e40af;stroke-width:2;cursor:pointer;transition:fill .3s,stroke .3s}
+.node-label{fill:#fff;font-size:14px;font-weight:700;pointer-events:none}
+.delay-label{fill:var(--muted);font-size:10px;pointer-events:none}
+.path-edge{stroke:var(--warning);stroke-width:4}
+.path-node{fill:var(--warning);stroke:#b45309}
+.result{margin-top:16px}
+.result-card{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.result-row:last-child{border-bottom:none}
+.result-label{color:var(--muted);font-size:14px}
+.result-value{font-weight:600;font-size:14px}
+.results-table{width:100%;border-collapse:collapse;margin-top:12px}
+.results-table th,.results-table td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.results-table th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.results-table td{font-size:14px}
+.badge{display:inline-block;padding:8px 14px;border-radius:8px;font-size:14px;font-weight:500}
+.badge.warning{background:rgba(245,158,11,.15);color:var(--warning);border:1px solid rgba(245,158,11,.3)}
+.badge.error{background:rgba(239,68,68,.15);color:var(--error);border:1px solid rgba(239,68,68,.3)}
+.dest-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.dest-item{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px}
+.dest-item input{width:auto;margin:0}
+.dest-item.disabled{opacity:.4;cursor:not-allowed}
+.loading{color:var(--muted);font-size:14px;padding:12px 0}
+.cycle-warn{margin-top:14px}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Routing Core Engine</h1>
+    <p>Dijkstra &middot; Bellman-Ford &middot; Nearest Neighbor TSP</p>
+  </header>
+
+  <div class="card">
+    <div class="form-row">
+      <label for="graph-select">Test Graph</label>
+      <select id="graph-select"></select>
+      <button id="load-btn">Load Graph</button>
+    </div>
+  </div>
+
+  <div id="graph-info" class="card" style="display:none">
+    <div class="stats">
+      <div class="stat"><span class="stat-label">Nodes</span><span class="stat-value" id="node-count">-</span></div>
+      <div class="stat"><span class="stat-label">Edges</span><span class="stat-value" id="edge-count">-</span></div>
+      <div class="stat"><span class="stat-label">Neg. Edges</span><span class="stat-value" id="neg-edge">-</span></div>
+      <div class="stat"><span class="stat-label">Algorithm</span><span class="stat-value" id="algo">-</span></div>
+    </div>
+    <div id="cycle-warning" class="badge error cycle-warn" style="display:none">
+      &#9888; Graph contains a negative cycle &mdash; shortest paths are undefined.
+    </div>
+  </div>
+
+  <div id="graph-viz" class="card" style="display:none">
+    <h3>Graph Visualization</h3>
+    <svg id="svg" viewBox="0 0 500 500"></svg>
+    <div style="text-align:center;margin-top:10px">
+      <button class="ghost" id="clear-btn">Clear Highlighting</button>
+    </div>
+  </div>
+
+  <div id="operations" class="card" style="display:none">
+    <div class="tabs">
+      <button class="tab active" data-tab="path">Shortest Path</button>
+      <button class="tab" data-tab="all">All Distances</button>
+      <button class="tab" data-tab="tsp">Nearest Neighbor TSP</button>
+    </div>
+
+    <div class="tab-content active" id="tab-path">
+      <div class="form-row">
+        <label>Source</label><select id="path-source"></select>
+        <label>Target</label><select id="path-target"></select>
+        <button id="path-btn">Find Shortest Path</button>
+      </div>
+      <div id="path-result" class="result"></div>
+    </div>
+
+    <div class="tab-content" id="tab-all">
+      <div class="form-row">
+        <label>Source</label><select id="all-source"></select>
+        <button id="all-btn">Compute All Distances</button>
+      </div>
+      <div id="all-result" class="result"></div>
+    </div>
+
+    <div class="tab-content" id="tab-tsp">
+      <div class="form-row">
+        <label>Start Node</label><select id="tsp-start"></select>
+      </div>
+      <div style="margin:14px 0">
+        <label>Destinations</label>
+        <div id="tsp-dests" class="dest-list"></div>
+      </div>
+      <button id="tsp-btn">Compute TSP Route</button>
+      <div id="tsp-result" class="result"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '/api';
+let currentGraph = null;
+let graphData = null;
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+function fmt(n) {
+  if (n === null || n === undefined) return 'INF';
+  const num = typeof n === 'string' ? parseFloat(n) : n;
+  if (Number.isInteger(num)) return num.toString();
+  return num.toFixed(2);
+}
+
+async function init() {
+  try {
+    const res = await fetch(`${API}/graphs`);
+    const graphs = await res.json();
+    const sel = document.getElementById('graph-select');
+    graphs.forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g.id;
+      opt.textContent = g.name;
+      sel.appendChild(opt);
+    });
+    if (graphs.length > 0) { sel.value = graphs[0].id; loadGraph(); }
+  } catch (e) {
+    document.querySelector('.card').insertAdjacentHTML('afterend',
+      `<div class="card"><div class="badge error">Failed to connect to server: ${e}</div></div>`);
+  }
+}
+
+async function loadGraph() {
+  const gid = parseInt(document.getElementById('graph-select').value);
+  if (!gid) return;
+  const res = await fetch(`${API}/load`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({graph_id: gid})
+  });
+  const data = await res.json();
+  if (data.error) { alert(data.error); return; }
+
+  graphData = data;
+  currentGraph = gid;
+
+  document.getElementById('graph-info').style.display = 'block';
+  document.getElementById('graph-viz').style.display = 'block';
+  document.getElementById('operations').style.display = 'block';
+
+  document.getElementById('node-count').textContent = data.nodes.length;
+  document.getElementById('edge-count').textContent = data.edgeCount;
+  document.getElementById('neg-edge').textContent = data.hasNegativeEdge ? 'Yes' : 'No';
+  document.getElementById('algo').textContent = data.hasNegativeEdge ? 'Bellman-Ford' : 'Dijkstra';
+  document.getElementById('cycle-warning').style.display = data.hasNegativeCycle ? 'block' : 'none';
+
+  renderGraph(data);
+  updateSelectors(data.nodes);
+  updateDestinations(data.nodes);
+  document.getElementById('tsp-start').dispatchEvent(new Event('change'));
+
+  ['path-result','all-result','tsp-result'].forEach(id => document.getElementById(id).innerHTML = '');
+}
+
+function renderGraph(data) {
+  const svg = document.getElementById('svg');
+  svg.innerHTML = '';
+  const nodes = data.nodes;
+  const edges = data.edges;
+  const n = nodes.length;
+  if (n === 0) return;
+  const cx = 250, cy = 250, r = 180;
+  const pos = {};
+  nodes.forEach((node, i) => {
+    const angle = (2 * Math.PI * i / n) - Math.PI / 2;
+    pos[node] = { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
+  });
+
+  edges.forEach(edge => {
+    const p1 = pos[edge.u], p2 = pos[edge.v];
+    if (!p1 || !p2) return;
+    svg.appendChild(svgEl('line', {
+      x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, class: 'edge',
+      'data-edge': `${Math.min(edge.u, edge.v)}-${Math.max(edge.u, edge.v)}`
+    }));
+    const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+    const lbl = svgEl('text', { x: mx, y: my - 5, class: 'edge-label', 'text-anchor': 'middle' });
+    lbl.textContent = fmt(edge.cost);
+    svg.appendChild(lbl);
+    const det = svgEl('text', { x: mx, y: my + 10, class: 'edge-detail', 'text-anchor': 'middle' });
+    det.textContent = `d=${fmt(edge.distance)} t=${fmt(edge.traffic)} w=${fmt(edge.weather)}`;
+    svg.appendChild(det);
+  });
+
+  nodes.forEach(node => {
+    const p = pos[node];
+    svg.appendChild(svgEl('circle', { cx: p.x, cy: p.y, r: 22, class: 'node', 'data-node': node }));
+    const lbl = svgEl('text', { x: p.x, y: p.y + 5, class: 'node-label', 'text-anchor': 'middle' });
+    lbl.textContent = node;
+    svg.appendChild(lbl);
+    const dl = svgEl('text', { x: p.x, y: p.y + 38, class: 'delay-label', 'text-anchor': 'middle' });
+    dl.textContent = `delay: ${fmt(data.delays[node])}`;
+    svg.appendChild(dl);
+  });
+}
+
+function highlightPath(path) {
+  clearHighlight();
+  if (!path || path.length === 0) return;
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = `${Math.min(path[i], path[i+1])}-${Math.max(path[i], path[i+1])}`;
+    const el = document.querySelector(`[data-edge="${key}"]`);
+    if (el) el.classList.add('path-edge');
+  }
+  path.forEach(node => {
+    const el = document.querySelector(`[data-node="${node}"]`);
+    if (el) el.classList.add('path-node');
+  });
+}
+
+function clearHighlight() {
+  document.querySelectorAll('.path-edge').forEach(el => el.classList.remove('path-edge'));
+  document.querySelectorAll('.path-node').forEach(el => el.classList.remove('path-node'));
+}
+
+function updateSelectors(nodes) {
+  ['path-source','path-target','all-source','tsp-start'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    nodes.forEach(n => {
+      const opt = document.createElement('option');
+      opt.value = n; opt.textContent = n;
+      sel.appendChild(opt);
+    });
+  });
+  if (nodes.length > 1) document.getElementById('path-target').value = nodes[nodes.length - 1];
+}
+
+function updateDestinations(nodes) {
+  const container = document.getElementById('tsp-dests');
+  container.innerHTML = '';
+  nodes.forEach(n => {
+    const lbl = document.createElement('label');
+    lbl.className = 'dest-item';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.value = n; cb.className = 'dest-cb';
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode(` Node ${n}`));
+    container.appendChild(lbl);
+  });
+}
+
+async function findPath() {
+  const source = parseInt(document.getElementById('path-source').value);
+  const target = parseInt(document.getElementById('path-target').value);
+  document.getElementById('path-result').innerHTML = '<div class="loading">Computing...</div>';
+  const res = await fetch(`${API}/path`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({graph_id: currentGraph, source, target})
+  });
+  const data = await res.json();
+  const c = document.getElementById('path-result');
+  if (data.error) { c.innerHTML = `<div class="badge error">${data.error}</div>`; return; }
+  if (data.unreachable) {
+    c.innerHTML = `<div class="badge warning">No path from ${data.source} to ${data.target}</div>`;
+    clearHighlight(); return;
+  }
+  c.innerHTML = `<div class="result-card">
+    <div class="result-row"><span class="result-label">Distance</span><span class="result-value">${fmt(data.distance)}</span></div>
+    <div class="result-row"><span class="result-label">Path</span><span class="result-value">${data.path.join(' \u2192 ')}</span></div>
+    <div class="result-row"><span class="result-label">Hops</span><span class="result-value">${data.path.length - 1}</span></div>
+  </div>`;
+  highlightPath(data.path);
+}
+
+async function findAll() {
+  const source = parseInt(document.getElementById('all-source').value);
+  document.getElementById('all-result').innerHTML = '<div class="loading">Computing...</div>';
+  const res = await fetch(`${API}/all`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({graph_id: currentGraph, source})
+  });
+  const data = await res.json();
+  const c = document.getElementById('all-result');
+  if (data.error) { c.innerHTML = `<div class="badge error">${data.error}</div>`; return; }
+  let html = '<table class="results-table"><thead><tr><th>Node</th><th>Distance</th><th>Parent</th></tr></thead><tbody>';
+  for (const [node, dist] of Object.entries(data.distances)) {
+    const parent = data.parents[node];
+    html += `<tr><td>${node}</td><td>${dist === null ? 'INF' : fmt(dist)}</td><td>${parent == -1 ? '-' : parent}</td></tr>`;
+  }
+  html += '</tbody></table>';
+  c.innerHTML = html;
+}
+
+async function findTSP() {
+  const start = parseInt(document.getElementById('tsp-start').value);
+  const dests = Array.from(document.querySelectorAll('.dest-cb:checked')).map(cb => parseInt(cb.value));
+  const c = document.getElementById('tsp-result');
+  if (dests.length === 0) { c.innerHTML = '<div class="badge warning">Select at least one destination</div>'; return; }
+  c.innerHTML = '<div class="loading">Computing...</div>';
+  const res = await fetch(`${API}/tsp`, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({graph_id: currentGraph, start, destinations: dests})
+  });
+  const data = await res.json();
+  if (data.error) { c.innerHTML = `<div class="badge error">${data.error}</div>`; return; }
+  c.innerHTML = `<div class="result-card">
+    <div class="result-row"><span class="result-label">Total Cost</span><span class="result-value">${data.cost === null ? 'Unreachable' : fmt(data.cost)}</span></div>
+    <div class="result-row"><span class="result-label">Route</span><span class="result-value">${data.route.join(' \u2192 ')}</span></div>
+    <div class="result-row"><span class="result-label">Stops</span><span class="result-value">${data.route.length - 2}</span></div>
+  </div>`;
+  highlightPath(data.route);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`[data-tab="${name}"]`).classList.add('active');
+  document.getElementById(`tab-${name}`).classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  init();
+  document.getElementById('load-btn').addEventListener('click', loadGraph);
+  document.getElementById('path-btn').addEventListener('click', findPath);
+  document.getElementById('all-btn').addEventListener('click', findAll);
+  document.getElementById('tsp-btn').addEventListener('click', findTSP);
+  document.getElementById('clear-btn').addEventListener('click', clearHighlight);
+  document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
+  document.getElementById('tsp-start').addEventListener('change', () => {
+    const start = parseInt(document.getElementById('tsp-start').value);
+    document.querySelectorAll('.dest-cb').forEach(cb => {
+      const item = cb.parentElement;
+      if (parseInt(cb.value) === start) { cb.checked = false; cb.disabled = true; item.classList.add('disabled'); }
+      else { cb.disabled = false; item.classList.remove('disabled'); }
+    });
+  });
+});
+</script>
+</body>
+</html>

@@ -51,6 +51,7 @@ public:
 
     // ---------- Accessors (for UI) ----------
     const std::set<int> &getNodes() const { return nodes_; }
+    const std::unordered_map<int, double> &getDelays() const { return delays_; }
     const std::map<int, std::vector<edge>> &getGraph() const { return graph_; }
     const std::map<int, int> &getParent() const { return parent_; }
     bool hasNegativeCycle() const { return has_negative_cycle_; }
